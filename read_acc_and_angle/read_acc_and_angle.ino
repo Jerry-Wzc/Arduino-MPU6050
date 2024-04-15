@@ -42,16 +42,17 @@ void loop() {
 
   
   // print out data
-  Serial.print("aX = "); Serial.print(accelerometer_x*9.8/16384.0);
-  Serial.print(" | aY = "); Serial.print(accelerometer_y*9.8/16384.0);
-  Serial.print(" | aZ = "); Serial.print(accelerometer_z*9.8/16384.0);
+  //Serial.print("aX = "); Serial.print(accelerometer_x*9.8/16384.0);
+  //Serial.print(" | aY = "); Serial.print(accelerometer_y*9.8/16384.0);
+  //Serial.print(" | aZ = "); Serial.print(accelerometer_z*9.8/16384.0);
   // the following equation was taken from the documentation [MPU-6000/MPU-6050 Register Map and Description, p.30]
   //Serial.print(" | tmp = "); Serial.print(temperature/340.00+36.53);
   //Serial.print(" | gX = "); Serial.print(gyro_x/131.0);
   //Serial.print(" | gY = "); Serial.print(gyro_y/131.0);
   //Serial.print(" | gZ = "); Serial.print(gyro_z/131.0);
-  Serial.print(" | roll = "); Serial.print(roll);
-  Serial.print(" | pitch = "); Serial.print(pitch);
+  //Serial.print(" | roll = "); Serial.print(roll);
+  //Serial.print(" | pitch = "); 
+  Serial.print(pitch);
   Serial.println();
 
 
