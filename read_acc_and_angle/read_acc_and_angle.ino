@@ -6,6 +6,8 @@ float accelerometer_x, accelerometer_y, accelerometer_z; // variables for accele
 int16_t gyro_x, gyro_y, gyro_z; // variables for gyro raw data
 int16_t temperature; // variables for temperature data
 
+float roll, pitch, roll_n, pitch_n=0;
+
 char tmp_str[7]; // temporary variable used in convert function
 
 char* convert_int16_to_str(float i) { // converts int16 to string. Moreover, resulting strings will have the same length in the debug monitor.
@@ -37,8 +39,8 @@ void loop() {
   gyro_z = Wire.read()<<8 | Wire.read(); // reading registers: 0x47 (GYRO_ZOUT_H) and 0x48 (GYRO_ZOUT_L)
 
   float roll, pitch;
-  roll = atan(accelerometer_y / sqrt(pow(accelerometer_x, 2) + pow(accelerometer_z, 2))) * 180 / PI;
-  pitch = atan(-1 * accelerometer_x / sqrt(pow(accelerometer_y, 2) + pow(accelerometer_z, 2))) * 180 / PI;
+  roll_n = atan(accelerometer_y / sqrt(pow(accelerometer_x, 2) + pow(accelerometer_z, 2))) * 180 / PI;
+  pitch_n = atan(-1 * accelerometer_x / sqrt(pow(accelerometer_y, 2) + pow(accelerometer_z, 2))) * 180 / PI;
 
   
   // print out data
@@ -52,11 +54,14 @@ void loop() {
   //Serial.print(" | gZ = "); Serial.print(gyro_z/131.0);
   //Serial.print(" | roll = "); Serial.print(roll);
   //Serial.print(" | pitch = "); 
-  Serial.print(pitch);
-  Serial.println();
+
+
+  Serial.print(roll_n);
+  Serial.print("/");
+  Serial.println(pitch_n);
 
 
   
   // delay
-  delay(200);
+  delay(16);
 }
