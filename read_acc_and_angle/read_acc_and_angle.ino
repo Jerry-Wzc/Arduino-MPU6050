@@ -6,7 +6,7 @@ float accelerometer_x, accelerometer_y, accelerometer_z; // variables for accele
 int16_t gyro_x, gyro_y, gyro_z; // variables for gyro raw data
 int16_t temperature; // variables for temperature data
 
-float roll, pitch, roll_n, pitch_n=0;
+float roll, pitch, roll_f, pitch_f=0;
 
 char tmp_str[7]; // temporary variable used in convert function
 
@@ -22,6 +22,7 @@ void setup() {
   Wire.write(0x6B); // PWR_MGMT_1 register
   Wire.write(0); // set to zero (wakes up the MPU-6050)
   Wire.endTransmission(true);
+  pinMode(8, INPUT_PULLUP);
 }
 void loop() {
   Wire.beginTransmission(MPU_ADDR);
@@ -39,10 +40,13 @@ void loop() {
   gyro_z = Wire.read()<<8 | Wire.read(); // reading registers: 0x47 (GYRO_ZOUT_H) and 0x48 (GYRO_ZOUT_L)
 
   float roll, pitch;
-  roll_n = atan(accelerometer_y / sqrt(pow(accelerometer_x, 2) + pow(accelerometer_z, 2))) * 180 / PI;
-  pitch_n = atan(-1 * accelerometer_x / sqrt(pow(accelerometer_y, 2) + pow(accelerometer_z, 2))) * 180 / PI;
+  roll = atan(accelerometer_y / sqrt(pow(accelerometer_x, 2) + pow(accelerometer_z, 2))) * 180 / PI;
+  pitch = atan(-1 * accelerometer_x / sqrt(pow(accelerometer_y, 2) + pow(accelerometer_z, 2))) * 180 / PI ;
 
-  
+  roll_f = 0.94*roll_f + 0.06*roll;
+  pitch_f = 0.94*pitch_f + 0.06*pitch;
+
+
   // print out data
   //Serial.print("aX = "); Serial.print(accelerometer_x*9.8/16384.0);
   //Serial.print(" | aY = "); Serial.print(accelerometer_y*9.8/16384.0);
@@ -56,9 +60,9 @@ void loop() {
   //Serial.print(" | pitch = "); 
 
 
-  Serial.print(roll_n);
+  Serial.print(roll_f);
   Serial.print("/");
-  Serial.println(pitch_n);
+  Serial.println(pitch_f);
 
 
   
