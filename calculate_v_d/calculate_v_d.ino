@@ -3,10 +3,14 @@
 const int MPU_ADDR = 0x68; // I2C address of the MPU-6050. If AD0 pin is set to HIGH, the I2C address will be 0x69.
 
 
-
-float angle_around_x, angle_around_y;
-float a_x_t, a_y_t, a_x_offset, a_y_offset, a_x, a_y, a_z, v_x, v_y, d_x, d_y=0;
+int16_t ax_raw, ay_raw, az_raw;
+int16_t ax_raw_offset, ay_raw_offset=0;
+float ax, ay, az, angle_around_x, angle_around_y;
+float vx, vy=0.0;
+float ax_c, ay_c=0.0;
 int buttonPin = 8;
+int counter, sum_x, sum_y=0;
+float avg=0.0;
 
 
 void setup() {
@@ -25,23 +29,33 @@ void loop() {
   Wire.requestFrom(MPU_ADDR, 7*2, true); // request a total of 7*2=14 registers
   
   // "Wire.read()<<8 | Wire.read();" means two registers are read and stored in the same variable
-  a_x_t = (Wire.read()<<8 | Wire.read()) *9.8/16384.0; // reading registers: 0x3B (ACCEL_XOUT_H) and 0x3C (ACCEL_XOUT_L)
-  a_y_t = (Wire.read()<<8 | Wire.read()) *9.8/16384.0; // reading registers: 0x3D (ACCEL_YOUT_H) and 0x3E (ACCEL_YOUT_L)
-  a_z = (Wire.read()<<8 | Wire.read()) *9.8/16384.0; // reading registers: 0x3F (ACCEL_ZOUT_H) and 0x40 (ACCEL_ZOUT_L)
-  a_x = 0.94*a_x + 0.06*a_x_t - a_x_offset;
-  a_y = 0.94*a_y + 0.06*a_y_t - a_y_offset;
-  angle_around_x = atan(a_y / sqrt(pow(a_x, 2) + pow(a_z, 2))); // in radian
-  angle_around_y = atan(-1 * a_x / sqrt(pow(a_y, 2) + pow(a_z, 2))); // in radian
+  ax_raw = (Wire.read()<<8 | Wire.read()); 
+  ay_raw = (Wire.read()<<8 | Wire.read());
+  az_raw = (Wire.read()<<8 | Wire.read()); 
+  ax = (ax_raw - ax_raw_offset) * 9.8 / 16384.0; // m/s2
+  ay = (ay_raw - ay_raw_offset) * 9.8 / 16384.0; // m/s2
+  // az = az_raw * 9.8 / 16384.0; // m/s2
+  vx = vx + ax * 0.1;
+  vy = vy + ay * 0.1;
 
-  v_x = v_x + a_x * 0.016 * cos(angle_around_y);
-  v_y = v_y + a_y * 0.016 * cos(angle_around_x);
-  d_y = d_y + v_y * 0.016;
+  if (digitalRead(buttonPin) == LOW){
+    //Serial.print("calibrating");
+    counter++;
+    sum_x = sum_x + ax_raw;
+    sum_y = sum_y + ay_raw;
+    ax_raw_offset = sum_x / counter;
+    ay_raw_offset = sum_y / counter;
+    vx=0;
+    vy=0;
+  }
 
-  
+  ax_c = 0.95 * ax_c + 0.05 * ax;
+  ay_c = 0.95 * ay_c + 0.05 * ay;
+
   // print out data
-  Serial.print(" aX = "); Serial.print(a_x);
-  Serial.print(" aY = "); Serial.print(a_y);
-  Serial.print(" aZ = "); Serial.print(a_z);
+  Serial.print(ax); Serial.print(" / "); Serial.print(ay); Serial.print(" / "); Serial.print(vx); Serial.print(" / "); Serial.print(vy);
+  // Serial.print(" aY = "); Serial.print(ay);
+  // Serial.print(" aZ = "); Serial.print(az);
   Serial.println();
   /*
   Serial.print(" v_x = "); Serial.print(v_x);
@@ -49,16 +63,10 @@ void loop() {
   Serial.print(" d_y = "); Serial.print(d_y);
   Serial.println();*/
 
-  if( digitalRead(buttonPin) == LOW ){
-    Serial.print("Click");
-    a_x_offset = a_x;
-    a_y_offset = a_y;
-    delay(500);
-  }
 
 
 
   
   // delay
-  delay(16);
+  delay(100);
 }
