@@ -5,7 +5,7 @@ import java.io.IOException;
 Serial myPort;
 
 String data="";
-float ax, ay, vx, vy;
+float ax, ay, az, vx, vy;
 
 void setup() {
   size (960, 640);
@@ -24,8 +24,7 @@ void draw() {
   stroke(255);
   strokeWeight(10);
   line(480, 180, 480+500*ay, 180);
-  text("vx: "+vx, 450, 240);
-  text("vy: "+vy, 450, 320);
+
   
 
   
@@ -52,8 +51,7 @@ void serialEvent (Serial myPort) {
       //--- Roll,Pitch in degrees
       ax = float(items[0]);
       ay = float(items[1]);
-      vx = float(items[2]);
-      vy = float(items[3]);
+      az = float(items[2]);
     }
   }
 }

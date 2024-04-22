@@ -5,7 +5,8 @@ const int MPU_ADDR = 0x68; // I2C address of the MPU-6050. If AD0 pin is set to 
 
 int16_t ax_raw, ay_raw, az_raw;
 int16_t ax_raw_offset, ay_raw_offset=0;
-float ax, ay, az, angle_around_x, angle_around_y;
+float ax, ay, az, roll, pitch, angle_around_y;
+float axx, ayy, azz;
 float vx, vy=0.0;
 float ax_c, ay_c=0.0;
 int buttonPin = 8;
@@ -34,9 +35,11 @@ void loop() {
   az_raw = (Wire.read()<<8 | Wire.read()); 
   ax = (ax_raw - ax_raw_offset) * 9.8 / 16384.0; // m/s2
   ay = (ay_raw - ay_raw_offset) * 9.8 / 16384.0; // m/s2
+  az = (az_raw) * 9.8 / 16384.0;
+  roll = atan(ay_raw / sqrt(pow(ax_raw, 2) + pow(az_raw, 2))); // rads
+  pitch = atan(-1 * ax_raw / sqrt(pow(ay_raw, 2) + pow(az_raw, 2)));
+
   // az = az_raw * 9.8 / 16384.0; // m/s2
-  vx = vx + ax * 0.1;
-  vy = vy + ay * 0.1;
 
   if (digitalRead(buttonPin) == LOW){
     //Serial.print("calibrating");
@@ -53,20 +56,22 @@ void loop() {
   ay_c = 0.95 * ay_c + 0.05 * ay;
 
   // print out data
-  Serial.print(ax); Serial.print(" / "); Serial.print(ay); Serial.print(" / "); Serial.print(vx); Serial.print(" / "); Serial.print(vy);
-  // Serial.print(" aY = "); Serial.print(ay);
-  // Serial.print(" aZ = "); Serial.print(az);
-  Serial.println();
   /*
-  Serial.print(" v_x = "); Serial.print(v_x);
-  Serial.print(" v_y = "); Serial.print(v_y);
-  Serial.print(" d_y = "); Serial.print(d_y);
-  Serial.println();*/
+  Serial.print(ax); Serial.print(" / "); 
+  Serial.print(ay); Serial.print(" / "); 
+  Serial.print(vx); Serial.print(" / "); 
+  Serial.print(vy); Serial.println();*/
 
+  axx = (ax * cos(pitch) + sin(pitch) * (ay*sin(roll) + az*cos(roll)));
+  ayy = (ay * cos(roll) - az * sin(roll));
+  azz = (-ax * sin(pitch) + cos(pitch) * (ay*sin(roll) + az*cos(roll)));
 
+  // Serial.print(ax); Serial.print("/"); Serial.print(ay); Serial.print("/"); Serial.print(az); Serial.print(" - ");
+  // Serial.print(roll); Serial.print("/"); Serial.print(pitch); Serial.print("  -  ");
+  Serial.print(axx); Serial.print("/"); Serial.print(ayy); Serial.print("/"); Serial.println(azz);
 
 
   
   // delay
-  delay(100);
+  //delay(100);
 }
